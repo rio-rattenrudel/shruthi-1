@@ -12,7 +12,7 @@ Sequences operated by external BPM should behave like driven by internal BPM. Th
 Furthermore, the 12 ticks delay was removed, which otherwise can not be programmed exactly.
 
 ## Original Notes
-
+```
 Shruthi-1, a digital/analog hybrid MIDI monosynth.
 
 This project is a redesign of the original Shruti-1, with a spec'ed up CPU,
@@ -32,3 +32,4 @@ discontinued filter boards which were released under a cc-by-nc-sa 3.0 license.
 
 Documentation, analyses, simulations and 3D models are released under a
 Creative Commons cc-by-sa 3.0 license.
+```
