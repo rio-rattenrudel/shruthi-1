@@ -1,0 +1,58 @@
+Install:
+--------
+
+1. install WINAVR 4.3.3 version!!
+	A. install WinAVR-20100110-install.exe from Firmware\#install folder
+		or
+	B. copy "WinAVR_4.3.3_copied" archive content to C:\Program Files (x86)\WinAVR433
+	 (when x0xb0x's WINAVR 4.7.2 installation already exists)
+
+2. install Git-2.24.0.2-64-bit.exe
+	- As the Windows Explorer integration it’s enough to choose “Git Bash Here” only.
+	- choice the second option (“Run Git from Windows command prompt”).
+	- cmd
+3. install python-2.7.3.amd64.msi
+	- install to C:\Program Files\Python
+	- no test suite
+	- no documentation
+	- systemvariable -> add to path: C:\Program Files\Python;
+4. install numpy-MKL-1.6.2.win-amd64-py2.7.exe
+
+
+Prepare source:
+---------------
+cd source
+git clone https://github.com/pichenettes/shruthi-1 4
+cd shruthi-1
+git clone https://github.com/pichenettes/avril 7 avrlib
+git clone https://github.com/pichenettes/avril-firmware_tools 4 tools
+git submodule init
+git submodule update
+
+
+Prepare avr config:
+-------------------
+
+Go into the ./avrlib directory and edit the “makefile.mk” file with an editor of your choice:
+AVRLIB_TOOLS_PATH ?= C:\\PROGRA~2\\WinAVR433\\bin/
+
+(WinAVR433 is for install B option above, otherwise: AVRLIB_TOOLS_PATH ?= C:\\PROGRA~2\\WinAVR\\bin/)
+IT IS VERY IMPORTANT to put a slash “/” at the end of the path name, NOT a backslash!
+As you can see YOU HAVE TO REPLACE PATHNAMES WITH SPACES by using the windows 8.3 naming (you can always check which name is being used by calling “dir /X” from the commandline).
+
+
+make build
+----------
+
+sh
+make -d -f shruthi/makefile
+make -d -f shruthi/makefile midi
+make -d -f shruthi/makefile syx
+exit
+
+Upload to shruthi
+-----------------
+
+- start shruthi with "S6" (button 6 - memory, bootloader with blank lines)
+- open MIOS Studio 2 -> sysex tool (send delay 250)
+- send ..\shruthi-1\build\shruthi1\shruthi1.syx
