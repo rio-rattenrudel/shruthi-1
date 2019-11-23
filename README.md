@@ -8,8 +8,8 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 
 1. [SEQ Handling - External BPM](https://github.com/rio-rattenrudel/shruthi-1/commit/aec0904e4ff012a145512ef84a24a13eba4a4901)
 
-Sequences operated by external BPM should behave like driven by internal BPM. That is, sequences are controlled by NOTE On/Off, but the external tempo is used. 
-Furthermore, the 12 ticks delay was removed, which otherwise can not be programmed exactly.
+* Sequences operated by external BPM should behave like driven by internal BPM. That is, sequences are controlled by NOTE On/Off, but the external tempo is used. 
+* Furthermore, the 12 ticks delay was removed, which otherwise can not be programmed exactly.
 
 ## Original Notes
 ```
