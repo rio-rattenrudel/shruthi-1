@@ -72,7 +72,13 @@ int8_t Part::arp_direction_;
 int8_t Part::arp_previous_note_;
 uint16_t Part::arp_seq_gate_length_counter_;
 int8_t Part::swing_amount_;
-uint8_t Part::internal_clock_blank_ticks_;
+//#####################################
+//# RIO: SEQ HANDLING (EXTERN / NODLY)
+//#####################################
+//uint8_t Part::internal_clock_blank_ticks_;
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
 int8_t Part::seq_transposition_;
 /* </static> */
 
@@ -275,11 +281,19 @@ void Part::NoteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   
   pressed_keys_.NoteOn(note, velocity);
   
-  if (!running() && sequencer_settings_.internal_clock()) {
-    Start(true);
-    Clock(true);
+  //#####################################
+  //# RIO: SEQ HANDLING (EXTERN / NODLY)
+  //#####################################
+  if (!running()) {
+    if (sequencer_settings_.internal_clock()) {
+      Start(true);
+      Clock(true);
+    } else Start(false);
   }
-  
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
+
   if (sequencer_settings_.mode() == SEQUENCER_MODE_STEP || !running()) {
     InternalNoteOn(note, velocity);
   }
@@ -305,6 +319,14 @@ void Part::NoteOff(uint8_t channel, uint8_t note) {
       InternalNoteOff(note);
     }
   }
+  //#####################################
+  //# RIO: SEQ HANDLING (EXTERN / NODLY)
+  //#####################################
+  if (running())
+    Stop(sequencer_settings_.internal_clock());
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
 }
 
 /* static */
@@ -426,7 +448,10 @@ void Part::Clock(bool internal) {
   if (running()) {
     if (internal) {
       midi_dispatcher.OnClock();
-      if (!pressed_keys_.size()) {
+      //#####################################
+      //# RIO: SEQ HANDLING (EXTERN / NODLY)
+      //#####################################
+      /*if (!pressed_keys_.size()) {
         ++internal_clock_blank_ticks_;
         if (internal_clock_blank_ticks_ >= 12) {
           Stop(true);
@@ -434,7 +459,10 @@ void Part::Clock(bool internal) {
         }
       } else {
         internal_clock_blank_ticks_ = 0;
-      }
+      }*/
+      //#####################################
+      //# RIO: END MODIFICATION
+      //#####################################
     }
     if (!arp_seq_prescaler_) {
       NextStep();
@@ -473,13 +501,18 @@ void Part::Clock(bool internal) {
   }
 }
 /* static */
-void Part::Start(bool internal) {
+//#####################################
+//# RIO: SEQ HANDLING (EXTERN / NODLY)
+//#####################################
+void Part::Start(bool internal, bool ignoreRunning) {
   if (internal) {
     midi_dispatcher.OnStart();
   }
   
-  lfo_step_[0] = 0;
-  lfo_step_[1] = 0;
+  if (internal || (!internal && ignoreRunning)) {
+    lfo_step_[0] = 0;
+    lfo_step_[1] = 0;
+  }
   
   if (sequencer_settings_.mode() != SEQUENCER_MODE_STEP) {
     poly_allocator_.Clear();
@@ -493,7 +526,7 @@ void Part::Start(bool internal) {
   
   arp_seq_prescaler_ = 0;
   arp_seq_step_ = 0xff;
-  arp_seq_running_ = true;
+  if (!ignoreRunning) arp_seq_running_ = true;
   arp_previous_note_ = 0;
   seq_transposition_ = 0;
   if (sequencer_settings_.arp_direction == ARPEGGIO_DIRECTION_DOWN) {
@@ -508,8 +541,8 @@ void Part::Start(bool internal) {
 }
 
 /* static */
-void Part::Stop(bool internal) {
-  arp_seq_running_ = false;
+void Part::Stop(bool internal, bool ignoreRunning) {
+  if (!ignoreRunning) arp_seq_running_ = false;
   ignore_note_off_messages_ = false;
   if (sequencer_settings_.mode() != SEQUENCER_MODE_STEP) {
     StopSequencerArpeggiatorNotes();
@@ -519,6 +552,9 @@ void Part::Stop(bool internal) {
     midi_dispatcher.OnStop();
   }
 }
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
 
 /* static */
 void Part::NextStep() {

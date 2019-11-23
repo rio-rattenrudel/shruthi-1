@@ -59,9 +59,14 @@ class Part {
   static void OmniModeOn();
   static void Reset();
   static void Clock(bool internal);
-  static void Start(bool internal);
-  static void Stop(bool internal);
-
+  //#####################################
+  //# RIO: SEQ HANDLING (EXTERN / NODLY)
+  //#####################################
+  static void Start(bool internal, bool ignoreRunning = false);
+  static void Stop(bool internal, bool ignoreRunning = false);
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
   static void ProcessBlock();  
   static void SetName(uint8_t* name);
   static void SetSequenceStep(uint8_t index, uint8_t data_a, uint8_t data_b);
@@ -246,7 +251,13 @@ class Part {
   static int8_t arp_previous_note_;
   static uint16_t arp_seq_gate_length_counter_;
   static int8_t swing_amount_;
-  static uint8_t internal_clock_blank_ticks_;
+//#####################################
+//# RIO: SEQ HANDLING (EXTERN / NODLY)
+//#####################################
+//  static uint8_t internal_clock_blank_ticks_;
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
   static int8_t seq_transposition_;
 
   DISALLOW_COPY_AND_ASSIGN(Part);

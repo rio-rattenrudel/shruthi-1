@@ -125,21 +125,27 @@ class MidiDispatcher : public midi::MidiDevice {
       part.Clock(false);
     }
   }
+  //#####################################
+  //# RIO: SEQ HANDLING (EXTERN / NODLY)
+  //#####################################
   static void Start() {
     if (!part.internal_clock()) {
-      part.Start(false);
+      part.Start(false, true);
     }
   }
   static void Continue() {
     if (!part.internal_clock()) {
-      part.Start(false);
+      part.Start(false, true);
     }
   }
   static void Stop() {
     if (!part.internal_clock()) {
-      part.Stop(false);
+      part.Stop(false, true);
     }
   }
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
   
   static void SysExStart() {
     ProcessSysEx(0xf0);
