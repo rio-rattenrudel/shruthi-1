@@ -11,6 +11,11 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 * Sequences operated by external BPM should behave like driven by internal BPM. That is, sequences are controlled by NOTE On/Off, but the external tempo is used. 
 * Furthermore, the 12 ticks delay was removed, which otherwise can not be programmed exactly.
 
+2. Fixed: SEQ Rhythm Page Editor](https://github.com/rio-rattenrudel/shruthi-1/commit/3635574db7a03e429eca79e33e80ad97ac0cc1b7)
+
+* Now the page will be displayed correctly (with shifted offset)
+* It is now possible to move with P1, equivalent to the Step Sequencer
+
 ## Original Notes
 ```
 Shruthi-1, a digital/analog hybrid MIDI monosynth.
