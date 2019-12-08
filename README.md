@@ -16,6 +16,12 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 * Now the page will be displayed correctly (with shifted offset)
 * It is now possible to move with P1, equivalent to the Step Sequencer
 
+3. [Fixed: SEQ Tracker & Rhythm Editor II ](https://github.com/rio-rattenrudel/shruthi-1/commit/1bef7258c06444ed6cccb32a8d90e109d683f4c8)
+
+* Now the tracker is displayed correctly (with shifted offset)
+* The Encoder increment is fixed for Rhythm Page Editor
+* Refactoring
+
 ## Original Notes
 ```
 Shruthi-1, a digital/analog hybrid MIDI monosynth.
