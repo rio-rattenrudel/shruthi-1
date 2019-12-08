@@ -482,12 +482,18 @@ void Editor::OnClick() {
   }
 }
 
+//#####################################
+//# RIO: FIXED SEQ TRACKER EDITOR II
+//#####################################
 /* static */
 uint8_t Editor::OnNoteOn(uint8_t note, uint16_t velocity) {
   uint8_t handled = 0;
   if (current_page_ == PAGE_SEQ_TRACKER && display_mode_ == DISPLAY_MODE_EDIT) {
-    part.mutable_sequencer_settings()->steps[cursor_].set_note(note);
-    part.mutable_sequencer_settings()->steps[cursor_].set_velocity(velocity);
+    SequencerSettings* seq = part.mutable_sequencer_settings();
+    uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+
+    seq->steps[position].set_note(note);
+    seq->steps[position].set_velocity(velocity);
     ++cursor_;
     if (cursor_ >= part.sequencer_settings().pattern_size) {
       cursor_ = 0;
@@ -497,6 +503,9 @@ uint8_t Editor::OnNoteOn(uint8_t note, uint16_t velocity) {
   }
   return handled;
 }
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
 
 /* static */
 void Editor::Refresh() {
@@ -791,14 +800,20 @@ void Editor::OnStepSequencerIncrement(int8_t increment) {
   }
 }
 
+//#####################################
+//# RIO: FIXED SEQ TRACKER EDITOR II
+//#####################################
 /* static */
 void Editor::DisplayTrackerPage() {
   memset(line_buffer_, ' ', kLcdWidth);
   if (cursor_ > part.sequencer_settings().pattern_size - 1) {
     cursor_ = part.sequencer_settings().pattern_size - 1;
   }
+  SequencerSettings* seq = part.mutable_sequencer_settings();
+  uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+
   if (cursor_ > 0) {
-    part.sequencer_settings().PrintStep(cursor_ - 1, line_buffer_);
+    part.sequencer_settings().PrintStep((position - 1) & 0x0f, line_buffer_);
   } else {
     // This is an invisible character. It is just there to prevent the status
     // indicator to be printed on the last column instead of the first.
@@ -806,7 +821,7 @@ void Editor::DisplayTrackerPage() {
   }
   display.Print(0, line_buffer_);
 
-  part.sequencer_settings().PrintStep(cursor_, line_buffer_);
+  part.sequencer_settings().PrintStep(position, line_buffer_);
   line_buffer_[0] = 0x7e;
   display.Print(1, line_buffer_);
   if (display_mode_ == DISPLAY_MODE_OVERVIEW) {
@@ -817,13 +832,13 @@ void Editor::DisplayTrackerPage() {
   }
 }
 
-//#####################################
-//# RIO: FIXED SEQ RHYTHM EDITOR
-//#####################################
 /* static */
 void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
   uint16_t value_16_bits = 0;
-  uint8_t pos;
+
+  SequencerSettings* seq = part.mutable_sequencer_settings();
+  uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+
   switch (knob_index) {
     case 0:
       {
@@ -835,56 +850,46 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
       }
       break;
     case 1:
-      part.mutable_sequencer_settings()->steps[cursor_].set_note(
+      seq->steps[position].set_note(
           24 + (value >> 1));
       break;
-    case 20:
     case 2:
-      if (knob_index == 2) pos = cursor_;
-      else pos = (cursor_ + part.mutable_sequencer_settings()->pattern_rotation) & 0x0f;
-
       value_16_bits = value << 3;
       value_16_bits *= 10;
       value_16_bits >>= 5;
       if (value_16_bits < 64) {
-        part.mutable_sequencer_settings()->steps[pos].set_velocity(0);
-        part.mutable_sequencer_settings()->steps[pos].set_gate(0);
-        part.mutable_sequencer_settings()->steps[pos].set_legato(0);
+        seq->steps[position].set_velocity(0);
+        seq->steps[position].set_gate(0);
+        seq->steps[position].set_legato(0);
       } else {
         value_16_bits -= 64;
-        part.mutable_sequencer_settings()->steps[pos].set_velocity(
-            value_16_bits);
-        part.mutable_sequencer_settings()->steps[pos].set_gate(1);
-        part.mutable_sequencer_settings()->steps[pos].set_legato(
-            value_16_bits >= 0x80);
+        seq->steps[position].set_velocity(value_16_bits);
+        seq->steps[position].set_gate(1);
+        seq->steps[position].set_legato(value_16_bits >= 0x80);
       }
       break;
     case 3:
-      part.mutable_sequencer_settings()->steps[cursor_].set_controller(
-          value >> 3);
+      seq->steps[position].set_controller(value >> 3);
       break;
   }
 }
-//#####################################
-//# RIO: END MODIFICATION
-//#####################################
 
 /* static */
 void Editor::OnTrackerIncrement(int8_t increment) {
   if (display_mode_ == DISPLAY_MODE_OVERVIEW) {
     MoveSequencerCursor(increment);
   } else {
-    int8_t note = part.mutable_sequencer_settings()->steps[cursor_].note();
+    SequencerSettings* seq = part.mutable_sequencer_settings();
+    uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+
+    int8_t note = seq->steps[position].note();
     note += increment;
     if (note >= 12 && note < 108) {
-      part.mutable_sequencer_settings()->steps[cursor_].set_note(note);
+      seq->steps[position].set_note(note);
     }
   }
 }
 
-//#####################################
-//# RIO: FIXED SEQ RHYTHM EDITOR
-//#####################################
 /* static */
 void Editor::DisplayPageRPage() {
   const SequencerSettings& seq = part.sequencer_settings();
@@ -920,28 +925,31 @@ void Editor::OnPageRInput(
     uint8_t value) {
   OnSequencerNavigation(knob_index, value);
   if (knob_index == 2) {
-    OnTrackerInput(20, value);
+    OnTrackerInput(2, value);
   } else if (knob_index == 0) {
     part.SetParameter(56, PRM_SEQ_PATTERN_ROTATION, value >> 3, true);
     last_knob_ = 0;
   }
 }
-//#####################################
-//# RIO: END MODIFICATION
-//#####################################
 
 /* static */
 void Editor::OnPageRIncrement(int8_t increment) {
   if (display_mode_ == DISPLAY_MODE_OVERVIEW) {
     MoveSequencerCursor(increment);
   } else {
-    int8_t flags = part.mutable_sequencer_settings()->steps[cursor_].flags();
+    SequencerSettings* seq = part.mutable_sequencer_settings();
+    uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+
+    int8_t flags = seq->steps[position].flags();
     flags += increment;
     if (flags >= 0 && flags <= 16) {
-      part.mutable_sequencer_settings()->steps[cursor_].set_flags(flags);
+      seq->steps[position].set_flags(flags);
     }
   }
 }
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
 
 /* static */
 void Editor::DisplayEditOverviewPage() {
