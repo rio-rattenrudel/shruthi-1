@@ -2,7 +2,7 @@ Shruthi-1 - MOD
 =======================
 ## Preamble
 
-This fork contains minor modifications to the original shruthi (1.03) Master Branch. The customizations are compatible with the original version, except the storage of "grove templates", lies in the branch 'original'. All changes in the source are uniformly marked with beginning and ending comment.
+This fork contains minor modifications to the original shruthi (1.03) Master Branch. The customizations are compatible (except the "grove templates" storage) with the original version, which lies in the branch 'original'. All changes in the source are uniformly marked with beginning and ending comment.
 
 ## Modifications
 
