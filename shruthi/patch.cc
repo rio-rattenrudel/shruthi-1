@@ -53,7 +53,14 @@ void Patch::PrepareForWrite() {
   
   extra_data_[1] = sequencer_settings.seq_mode;
   extra_data_[2] = sequencer_settings.seq_tempo;
-  extra_data_[3] = sequencer_settings.seq_groove_template;
+  //#####################################
+  //# RIO: PATTERN ROTATION STORAGE
+  //#####################################
+  extra_data_[3] = (sequencer_settings.pattern_rotation << 4) | \
+      sequencer_settings.seq_groove_template;
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
   extra_data_[4] = sequencer_settings.seq_groove_amount;
   extra_data_[5] = (sequencer_settings.arp_direction << 4) | \
       sequencer_settings.arp_range;
@@ -104,17 +111,22 @@ void Patch::Update() {
   filter_2_mode_ = filter_topology_ & 0xf;
   filter_1_mode_ = filter_topology_ >> 4;
   
+  //#####################################
+  //# RIO: PATTERN ROTATION STORAGE
+  //#####################################
+  SequencerSettings* sequencer_settings = part.mutable_sequencer_settings();
+  if (!part.running()) sequencer_settings->pattern_rotation = 0;
+
   if (version_ == '%') {
     SystemSettings* system_settings = part.mutable_system_settings();
-    SequencerSettings* sequencer_settings = part.mutable_sequencer_settings();
-    
     system_settings->legato = extra_data_[0] & 0x40 ? 1 : 0;
     system_settings->portamento = extra_data_[0] & 0x3f;
 
     if (!part.running()) {
       sequencer_settings->seq_mode = extra_data_[1];
       sequencer_settings->seq_tempo = extra_data_[2];
-      sequencer_settings->seq_groove_template = extra_data_[3];
+      sequencer_settings->pattern_rotation = extra_data_[3] >> 4;
+      sequencer_settings->seq_groove_template = extra_data_[3] & 0xf;
       sequencer_settings->seq_groove_amount = extra_data_[4];
       sequencer_settings->arp_direction = extra_data_[5] >> 4;
       sequencer_settings->arp_range = extra_data_[5] & 0xf;
@@ -122,6 +134,9 @@ void Patch::Update() {
       sequencer_settings->arp_clock_division = extra_data_[7];
     }
   }
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
 }
 
 }  // shruthi
