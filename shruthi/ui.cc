@@ -335,7 +335,15 @@ void Ui::DebounceSwitches() {
       } else {
         queue_.AddEvent(CONTROL_SWITCH, i, 0);
       }
+    //#####################################
+    //# RIO: FIXED SEQ TRACKER EDITOR III
+    //#####################################
+    } else if (switch_state_[i] == 0x7f) {
+      queue_.AddEvent(CONTROL_SWITCH, i, 0x7f);
     }
+    //#####################################
+    //# RIO: END MODIFICATION
+    //#####################################
   }
   
   // Handle shift switch

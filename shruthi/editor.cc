@@ -172,6 +172,13 @@ ParameterPage Editor::last_visited_page_[] = {
 uint8_t Editor::last_visited_subpage_ = 0;
 uint8_t Editor::display_mode_ = DISPLAY_MODE_OVERVIEW;
 uint8_t Editor::editor_mode_ = EDITOR_MODE_PATCH;
+//#####################################
+//# RIO: FIXED SEQ TRACKER EDITOR III
+//#####################################
+uint8_t Editor::tracker_mode_ = TRACKER_STANDARD_MODE;
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
 uint8_t Editor::last_visited_group_[] = {
     GROUP_FILTER,
     GROUP_SEQUENCER_ARPEGGIATOR,
@@ -366,10 +373,17 @@ void Editor::OnProgrammerSwitch(const Event& event) {
   }
 };
 
+//#####################################
+//# RIO: FIXED SEQ TRACKER EDITOR III
+//#####################################
 /* static */
 void Editor::OnSwitch(const Event& event) {
   uint8_t id = event.control_id;
-  if (event.value == 0xff) {
+  if (event.value == 0x7f) {
+    if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
+      tracker_mode_ = TRACKER_STANDARD_MODE;
+    }
+  } else if (event.value == 0xff) {
     if (current_page_ != PAGE_LOAD_SAVE) {
       return;
     }
@@ -418,13 +432,20 @@ void Editor::OnSwitch(const Event& event) {
       ToggleLoadSaveAction();
     }
   } else {
-    if (editor_mode_ == EDITOR_MODE_SEQUENCE) {
-      JumpToPageGroup(id + GROUP_SEQUENCER_ARPEGGIATOR);
-    } else if (editor_mode_ == EDITOR_MODE_PATCH) {
-      JumpToPageGroup(id + GROUP_OSC);
+    if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
+      tracker_mode_ = TRACKER_ROTATION_MODE;
+    } else {
+      if (editor_mode_ == EDITOR_MODE_SEQUENCE) {     
+        JumpToPageGroup(id + GROUP_SEQUENCER_ARPEGGIATOR);
+      } else if (editor_mode_ == EDITOR_MODE_PATCH) {
+        JumpToPageGroup(id + GROUP_OSC);
+      }      
     }
   }
 }
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
 
 /* static */
 void Editor::OnInput(uint8_t knob_index, uint8_t value) {
@@ -800,9 +821,9 @@ void Editor::OnStepSequencerIncrement(int8_t increment) {
   }
 }
 
-//#####################################
-//# RIO: FIXED SEQ TRACKER EDITOR II
-//#####################################
+//#########################################
+//# RIO: FIXED SEQ TRACKER EDITOR II / III
+//#########################################
 /* static */
 void Editor::DisplayTrackerPage() {
   memset(line_buffer_, ' ', kLcdWidth);
@@ -842,10 +863,11 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
   switch (knob_index) {
     case 0:
       {
-        cursor_ = value >> 3;
-        uint8_t max_position = part.sequencer_settings().pattern_size - 1;
-        if (cursor_ > max_position) {
-          cursor_ = max_position;
+        if (tracker_mode_ == TRACKER_ROTATION_MODE) {
+          part.SetParameter(56, PRM_SEQ_PATTERN_ROTATION, value >> 3, true);
+          last_knob_ = 0;
+        } else {
+          OnSequencerNavigation(1, value);
         }
       }
       break;
@@ -869,7 +891,12 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
       }
       break;
     case 3:
-      seq->steps[position].set_controller(value >> 3);
+      if (tracker_mode_ == TRACKER_ROTATION_MODE) {
+        OnSequencerNavigation(3, value);
+        OnSequencerNavigation(1, value);
+      } else {
+        seq->steps[position].set_controller(value >> 3);
+      }
       break;
   }
 }
@@ -947,9 +974,9 @@ void Editor::OnPageRIncrement(int8_t increment) {
     }
   }
 }
-//#####################################
+//#########################################
 //# RIO: END MODIFICATION
-//#####################################
+//#########################################
 
 /* static */
 void Editor::DisplayEditOverviewPage() {

@@ -39,6 +39,17 @@ enum EditorMode {
   EDITOR_MODE_SEQUENCE,
 };
 
+//#####################################
+//# RIO: FIXED SEQ TRACKER EDITOR III
+//#####################################
+enum TrackerMode {
+  TRACKER_STANDARD_MODE,
+  TRACKER_ROTATION_MODE,
+};
+//#####################################
+//# RIO: END MODIFICATION
+//#####################################
+
 enum LoadSaveTarget {
   LOAD_SAVE_TARGET_PATCH = 1,
   LOAD_SAVE_TARGET_SEQUENCE = 2,
@@ -303,6 +314,13 @@ class Editor {
   static uint8_t last_visited_group_[2];
   static uint8_t display_mode_;
   static uint8_t editor_mode_;
+  //#####################################
+  //# RIO: FIXED SEQ TRACKER EDITOR III
+  //#####################################
+  static uint8_t tracker_mode_;
+  //#####################################
+  //# RIO: END MODIFICATION
+  //#####################################
   static uint8_t cursor_;
   static uint8_t programmer_parameter_;
   static uint8_t last_knob_;
