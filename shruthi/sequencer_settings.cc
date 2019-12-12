@@ -63,7 +63,13 @@ void SequencerSettings::PrintStep(uint8_t step, char* buffer) const {
   buffer[9] = steps[step].character();
   if (steps[step].gate()) {
     buffer[11] = NibbleToAscii(steps[step].velocity() >> 4);
-  }
+//######################################
+//# RIO: FIXED SEQ TRACKER STEP DISPLAY
+//######################################
+  } else buffer[11] = ' ';
+//######################################
+//# RIO: END MODIFICATION
+//######################################
   buffer[13] = NibbleToAscii(steps[step].controller()),
   buffer[15] = 0x7c;
 }
