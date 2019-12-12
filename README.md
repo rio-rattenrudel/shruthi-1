@@ -28,9 +28,14 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 * A pattern rotation reset is added for "non-running" patch changes
 * _Note: affects data storage_
 
-5. [Feature: SEQ Tracker Editor III](https://github.com/rio-rattenrudel/shruthi-1/commit/8a60967f98f1137de77f9603816ac0625fa4e4c8)
+5.a [Feature: SEQ Tracker Editor III](https://github.com/rio-rattenrudel/shruthi-1/commit/8a60967f98f1137de77f9603816ac0625fa4e4c8)
 
 * Now the "pattern rotation" and "pattern length" can be changed in the tracker page using P1 and P4 while holding S2.
+
+5.b [Feature: SEQ Tracker Editor III - part B](https://github.com/rio-rattenrudel/shruthi-1/commit/129b8bc5c21fac5bd2e88a604b767e80e03c9084)
+
+* A step can be copied to another position by P2 while holding S2
+* Steps can be deleted by P1 while holding S6 (SHIFT) + S2
 
 ## Original Notes
 ```
