@@ -175,7 +175,12 @@ uint8_t Editor::editor_mode_ = EDITOR_MODE_PATCH;
 //#####################################
 //# RIO: FIXED SEQ TRACKER EDITOR III
 //#####################################
-uint8_t Editor::tracker_mode_ = TRACKER_STANDARD_MODE;
+uint8_t Editor::tracker_mode_   = TRACKER_STANDARD_MODE;
+uint8_t Editor::step_position_  = 0xff;
+uint8_t Editor::step_cpydata0_  = 0;
+uint8_t Editor::step_cpydata1_  = 0;
+uint8_t Editor::step_tmpdata0_  = 0;
+uint8_t Editor::step_tmpdata1_  = 0;
 //#####################################
 //# RIO: END MODIFICATION
 //#####################################
@@ -381,9 +386,14 @@ void Editor::OnSwitch(const Event& event) {
   uint8_t id = event.control_id;
   if (event.value == 0x7f) {
     if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
-      tracker_mode_ = TRACKER_STANDARD_MODE;
+      tracker_mode_   = TRACKER_STANDARD_MODE;
+      step_position_  = 0xff;
     }
   } else if (event.value == 0xff) {
+    if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
+      tracker_mode_ = TRACKER_DELETION_MODE;
+    }
+
     if (current_page_ != PAGE_LOAD_SAVE) {
       return;
     }
@@ -429,11 +439,18 @@ void Editor::OnSwitch(const Event& event) {
       confirm_save_system_settings.callback = &SaveSystemSettings;
       Confirm(confirm_save_system_settings);
     } else {
-      ToggleLoadSaveAction();
+      if (tracker_mode_ == TRACKER_STANDARD_MODE)
+        ToggleLoadSaveAction();
     }
   } else {
     if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
       tracker_mode_ = TRACKER_ROTATION_MODE;
+
+      SequencerSettings* seq = part.mutable_sequencer_settings();
+      uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+      step_cpydata0_ = seq->steps[position].data_[0];
+      step_cpydata1_ = seq->steps[position].data_[1];
+
     } else {
       if (editor_mode_ == EDITOR_MODE_SEQUENCE) {     
         JumpToPageGroup(id + GROUP_SEQUENCER_ARPEGGIATOR);
@@ -867,13 +884,31 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
           part.SetParameter(56, PRM_SEQ_PATTERN_ROTATION, value >> 3, true);
           last_knob_ = 0;
         } else {
+          if (tracker_mode_ == TRACKER_DELETION_MODE) { 
+            seq->steps[position].set_velocity(0);
+            seq->steps[position].set_gate(0);
+            seq->steps[position].set_legato(0);
+            seq->steps[position].set_controller(0);
+          }
           OnSequencerNavigation(1, value);
         }
       }
       break;
     case 1:
-      seq->steps[position].set_note(
-          24 + (value >> 1));
+      if (tracker_mode_ == TRACKER_ROTATION_MODE) {
+        if (step_position_ != 0xff)
+          seq->steps[step_position_].set_raw(step_tmpdata0_, step_tmpdata1_);
+
+        OnSequencerNavigation(1, value);
+
+        step_position_ = (cursor_ + seq->pattern_rotation) & 0x0f;
+        step_tmpdata0_ = seq->steps[step_position_].data_[0];
+        step_tmpdata1_ = seq->steps[step_position_].data_[1];
+
+        seq->steps[step_position_].set_raw(step_cpydata0_, step_cpydata1_);
+      } else {
+        seq->steps[position].set_note(24 + (value >> 1));
+      }
       break;
     case 2:
       value_16_bits = value << 3;

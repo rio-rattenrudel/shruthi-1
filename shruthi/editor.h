@@ -45,6 +45,7 @@ enum EditorMode {
 enum TrackerMode {
   TRACKER_STANDARD_MODE,
   TRACKER_ROTATION_MODE,
+  TRACKER_DELETION_MODE,
 };
 //#####################################
 //# RIO: END MODIFICATION
@@ -318,6 +319,11 @@ class Editor {
   //# RIO: FIXED SEQ TRACKER EDITOR III
   //#####################################
   static uint8_t tracker_mode_;
+  static uint8_t step_position_;
+  static uint8_t step_cpydata0_;
+  static uint8_t step_cpydata1_;
+  static uint8_t step_tmpdata0_;
+  static uint8_t step_tmpdata1_;
   //#####################################
   //# RIO: END MODIFICATION
   //#####################################
