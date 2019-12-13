@@ -181,6 +181,8 @@ uint8_t Editor::step_cpydata0_  = 0;
 uint8_t Editor::step_cpydata1_  = 0;
 uint8_t Editor::step_tmpdata0_  = 0;
 uint8_t Editor::step_tmpdata1_  = 0;
+uint8_t Editor::rota_cpydata0_[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+uint8_t Editor::rota_cpydata1_[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 //#####################################
 //# RIO: END MODIFICATION
 //#####################################
@@ -385,7 +387,7 @@ void Editor::OnProgrammerSwitch(const Event& event) {
 void Editor::OnSwitch(const Event& event) {
   uint8_t id = event.control_id;
   if (event.value == 0x7f) {
-    if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
+    if (id == SWITCH_2) {
       tracker_mode_   = TRACKER_STANDARD_MODE;
       step_position_  = 0xff;
     }
@@ -443,21 +445,31 @@ void Editor::OnSwitch(const Event& event) {
         ToggleLoadSaveAction();
     }
   } else {
-    if (current_page_ == PAGE_SEQ_TRACKER && id == SWITCH_2) {
-      tracker_mode_ = TRACKER_ROTATION_MODE;
+    if (editor_mode_ == EDITOR_MODE_SEQUENCE) {
 
-      SequencerSettings* seq = part.mutable_sequencer_settings();
-      uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
-      step_cpydata0_ = seq->steps[position].data_[0];
-      step_cpydata1_ = seq->steps[position].data_[1];
+      if (( current_page_ == PAGE_SEQ_TRACKER || 
+            current_page_ == PAGE_SEQ_RHYTHM || 
+            current_page_ == PAGE_SEQ_CONTROLLER) && id == SWITCH_2) {
 
-    } else {
-      if (editor_mode_ == EDITOR_MODE_SEQUENCE) {     
-        JumpToPageGroup(id + GROUP_SEQUENCER_ARPEGGIATOR);
-      } else if (editor_mode_ == EDITOR_MODE_PATCH) {
-        JumpToPageGroup(id + GROUP_OSC);
-      }      
-    }
+        tracker_mode_ = TRACKER_ROTATION_MODE;
+
+        SequencerSettings* seq = part.mutable_sequencer_settings();
+        uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+        step_cpydata0_ = seq->steps[position].data_[0];
+        step_cpydata1_ = seq->steps[position].data_[1];
+
+        for (uint8_t i = 0; i < 16; ++i) {
+          rota_cpydata0_[i] = seq->steps[i].data_[0];
+          rota_cpydata1_[i] = seq->steps[i].data_[1];
+        }
+
+        if (current_page_ == PAGE_SEQ_TRACKER) return;
+      }
+
+      JumpToPageGroup(id + GROUP_SEQUENCER_ARPEGGIATOR);
+    } else if (editor_mode_ == EDITOR_MODE_PATCH) {
+      JumpToPageGroup(id + GROUP_OSC);
+    }      
   }
 }
 //#####################################
@@ -876,6 +888,7 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
 
   SequencerSettings* seq = part.mutable_sequencer_settings();
   uint8_t position = (cursor_ + seq->pattern_rotation) & 0x0f;
+  uint8_t val;
 
   switch (knob_index) {
     case 0:
@@ -884,7 +897,8 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
           part.SetParameter(56, PRM_SEQ_PATTERN_ROTATION, value >> 3, true);
           last_knob_ = 0;
         } else {
-          if (tracker_mode_ == TRACKER_DELETION_MODE) { 
+          if (tracker_mode_ == TRACKER_DELETION_MODE) {
+            seq->steps[position].set_note(48);  // C3
             seq->steps[position].set_velocity(0);
             seq->steps[position].set_gate(0);
             seq->steps[position].set_legato(0);
@@ -911,18 +925,34 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
       }
       break;
     case 2:
-      value_16_bits = value << 3;
-      value_16_bits *= 10;
-      value_16_bits >>= 5;
-      if (value_16_bits < 64) {
-        seq->steps[position].set_velocity(0);
-        seq->steps[position].set_gate(0);
-        seq->steps[position].set_legato(0);
+      if (tracker_mode_ == TRACKER_ROTATION_MODE) {
+        val = value >> 5;
+        if (value >> 3) val++; // max. 5 split 0,1,2,3,4 -> 16,8,4,2,1
+
+        for (uint8_t i = 0; i < 16; ++i) {
+          seq->steps[i].set_raw(
+            rota_cpydata0_[i % (16 >> val)],
+            rota_cpydata1_[i % (16 >> val)]
+          );
+        }
+
+        if (!val) OnSequencerNavigation(1, 0);
+        else      OnSequencerNavigation(1, (16 >> val) << 3); 
+
       } else {
-        value_16_bits -= 64;
-        seq->steps[position].set_velocity(value_16_bits);
-        seq->steps[position].set_gate(1);
-        seq->steps[position].set_legato(value_16_bits >= 0x80);
+        value_16_bits = value << 3;
+        value_16_bits *= 10;
+        value_16_bits >>= 5;
+        if (value_16_bits < 64) {
+          seq->steps[position].set_velocity(0);
+          seq->steps[position].set_gate(0);
+          seq->steps[position].set_legato(0);
+        } else {
+          value_16_bits -= 64;
+          seq->steps[position].set_velocity(value_16_bits);
+          seq->steps[position].set_gate(1);
+          seq->steps[position].set_legato(value_16_bits >= 0x80);
+        }
       }
       break;
     case 3:

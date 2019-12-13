@@ -324,6 +324,8 @@ class Editor {
   static uint8_t step_cpydata1_;
   static uint8_t step_tmpdata0_;
   static uint8_t step_tmpdata1_;
+  static uint8_t rota_cpydata0_[16];
+  static uint8_t rota_cpydata1_[16];
   //#####################################
   //# RIO: END MODIFICATION
   //#####################################
