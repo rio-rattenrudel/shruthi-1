@@ -37,6 +37,12 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 * A step can be copied to another position by P2 while holding S2
 * Steps can be deleted by P1 while holding S6 (SHIFT) + S2
 
+5c. [Feature: SEQ Tracker Editor III - part C](https://github.com/rio-rattenrudel/shruthi-1/commit/4ce4b77ec5dbb83b451d244c958cb6422e15675a)
+
+* A part of the pattern can be splitted/copied for every 16th ,8th ,4th ,2th ,1st step(s) by P3 while holding S2
+* "Step deletion" resets note to "C3"
+* improved S2 handling (S2 also takes the cursor position of the rhythm/controller-page into account)
+
 ## Original Notes
 ```
 Shruthi-1, a digital/analog hybrid MIDI monosynth.
