@@ -45,7 +45,7 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 
 ## Build size
 
-```64510``` (of 64512 total)
+```64510 (max: 64512)```
 
 ## Original Notes
 ```
