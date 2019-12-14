@@ -43,6 +43,10 @@ This fork contains minor modifications to the original shruthi (1.03) Master Bra
 * "Step deletion" resets note to "C3"
 * improved S2 handling (S2 also takes the cursor position of the rhythm/controller-page into account)
 
+## Build size
+
+```64510``` (of 64512 total)
+
 ## Original Notes
 ```
 Shruthi-1, a digital/analog hybrid MIDI monosynth.
