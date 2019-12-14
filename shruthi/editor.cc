@@ -873,6 +873,12 @@ void Editor::DisplayTrackerPage() {
 
   part.sequencer_settings().PrintStep(position, line_buffer_);
   line_buffer_[0] = 0x7e;
+
+  // set marker [ brace the cursor ]
+  if (tracker_mode_ != TRACKER_STANDARD_MODE) {
+    line_buffer_[4] = 0x5b;
+    line_buffer_[15] = 0x5d;
+  }
   display.Print(1, line_buffer_);
   if (display_mode_ == DISPLAY_MODE_OVERVIEW) {
     display.set_cursor_position(0xff);
@@ -898,11 +904,8 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
           last_knob_ = 0;
         } else {
           if (tracker_mode_ == TRACKER_DELETION_MODE) {
+            seq->steps[position].set_raw(0, 0);
             seq->steps[position].set_note(48);  // C3
-            seq->steps[position].set_velocity(0);
-            seq->steps[position].set_gate(0);
-            seq->steps[position].set_legato(0);
-            seq->steps[position].set_controller(0);
           }
           OnSequencerNavigation(1, value);
         }
@@ -927,17 +930,18 @@ void Editor::OnTrackerInput(uint8_t knob_index, uint8_t value) {
     case 2:
       if (tracker_mode_ == TRACKER_ROTATION_MODE) {
         val = value >> 5;
-        if (value >> 3) val++; // max. 5 split 0,1,2,3,4 -> 16,8,4,2,1
+        if (value >> 3) val++;  // max. 5 split:  0,1,2,3,4 
+        val = 16 >> val;        // set division: 16,8,4,2,1
 
         for (uint8_t i = 0; i < 16; ++i) {
           seq->steps[i].set_raw(
-            rota_cpydata0_[i % (16 >> val)],
-            rota_cpydata1_[i % (16 >> val)]
+            rota_cpydata0_[i % val],
+            rota_cpydata1_[i % val]
           );
         }
 
-        if (!val) OnSequencerNavigation(1, 0);
-        else      OnSequencerNavigation(1, (16 >> val) << 3); 
+        if (val == 16)  OnSequencerNavigation(1, 0);
+        else            OnSequencerNavigation(1, val << 3); 
 
       } else {
         value_16_bits = value << 3;

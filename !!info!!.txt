@@ -1,4 +1,4 @@
-Install:
+﻿Install:
 --------
 
 1. install WINAVR 4.3.3 version!!
@@ -10,7 +10,7 @@ Install:
 2. install Git-2.24.0.2-64-bit.exe
 	- As the Windows Explorer integration it’s enough to choose “Git Bash Here” only.
 	- choice the second option (“Run Git from Windows command prompt”).
-	- cmd
+	- use windows default console window
 3. install python-2.7.3.amd64.msi
 	- install to C:\Program Files\Python
 	- no test suite
@@ -48,6 +48,10 @@ sh
 make -d -f shruthi/makefile
 make -d -f shruthi/makefile midi
 make -d -f shruthi/makefile syx
+
+make size
+cat shruthi1.size | awk '{ print $1+$2 }' | tail -n1
+
 exit
 
 Upload to shruthi
