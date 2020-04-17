@@ -22,10 +22,10 @@
 Prepare source:
 ---------------
 cd source
-git clone https://github.com/pichenettes/shruthi-1 4
+git clone https://github.com/rio-rattenrudel/shruthi-1 		//original: git clone https://github.com/pichenettes/shruthi-1
 cd shruthi-1
-git clone https://github.com/pichenettes/avril 7 avrlib
-git clone https://github.com/pichenettes/avril-firmware_tools 4 tools
+git clone https://github.com/pichenettes/avril avrlib
+git clone https://github.com/pichenettes/avril-firmware_tools tools
 git submodule init
 git submodule update
 
