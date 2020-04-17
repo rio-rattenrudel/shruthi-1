@@ -40,6 +40,9 @@ AVRLIB_TOOLS_PATH ?= C:\\PROGRA~2\\WinAVR433\\bin/
 IT IS VERY IMPORTANT to put a slash “/” at the end of the path name, NOT a backslash!
 As you can see YOU HAVE TO REPLACE PATHNAMES WITH SPACES by using the windows 8.3 naming (you can always check which name is being used by calling “dir /X” from the commandline).
 
+size: $(TARGET).size
+		cat $(TARGET).size | awk '{ print $$1+$$2 }' | tail -n1
+
 
 make build
 ----------
